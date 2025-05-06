@@ -721,7 +721,27 @@
                     // Log an error if the input element wasn't found (shouldn't happen normally)
                     console.error("Element #total-input (elements.total01Input) not found for filtering.");
                 }
-               
+
+                //Deletes the O when you go to enter a new score for 01 games
+                if (elements.total01Input) {
+                    elements.total01Input.addEventListener('focus', function() {
+                        // If the current value is '0', clear it
+                        if (this.value === '0') {
+                            this.value = '';
+                        }
+                    });
+                    // Optional: Add back '0' if left empty on blur (focus lost)
+                    // This prevents submitting an empty string potentially causing NaN errors
+                    // and restores the visual default if nothing was entered.
+                    elements.total01Input.addEventListener('blur', function() {
+                        if (this.value === '') {
+                            this.value = '0';
+                        }
+                    });
+                     console.log("Focus/Blur listeners added to #total-input to handle default '0'.");
+                } else {
+                    console.error("Element #total-input (elements.total01Input) not found for focus/blur handling.");
+                }
                 //elements.historyToggle.addEventListener('click', function() {
                 //    document.querySelector('.history-collapsed').classList.toggle('history-collapsed');
                 //    this.classList.toggle('active');
