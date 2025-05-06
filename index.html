@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trifecta Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .game-selector.active {
+            box-shadow: 0 0 0 3px #500303;
+        }
+        .dart-input:focus {
+            box-shadow: 0 0 0 3px #10b981;
+        }
+        .animate-score {
+            animation: pulse 0.5s;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .multiplier-selector {
+            transition: all 0.2s;
+        }
+        .multiplier-selector.active {
+            background-color: #e20707;
+            color: white;
+        }
+        .cricket-mark {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 2rem; /* Larger cricket marks */
+        }
+        select.cricket-dart-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            background-color: #111;
+            color: #fff;
+        }
+        .player-turn {
+            position: relative;
+            background-color: #a0909021 !important;
+        }
+        .player-turn::after {
+            content: "⬤";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgb(255, 4, 4);
+            font-size: 1rem;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .editable-name {
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .editable-name:hover {
+            text-decoration: underline;
+        }
+        .score-large {
+            font-size: 2.8rem; /* Smaller score display */
+            line-height: 1;
+        }
+        .last-score {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-right: 0.5rem;
+        }
+        .history-collapsed .history-content {
+            display: none;
+        }
+        .history-toggle {
+            cursor: pointer;
+            user-select: none;
+        }
+        .history-toggle i {
+            transition: transform 0.2s;
+        }
+        .history-toggle.active i {
+            transform: rotate(180deg);
+        }
+        
+        /* Dark theme for cricket */
+        .cricket-dark {
+            /*background-color: #111;*/
+            color: white;
+        }
+        .cricket-dark table {
+            width: 100%;
+            max-height: fit-content;
+        }
+        .cricket-dark th {
+            font-size: 2rem;
+            padding: 0.3rem 0;
+            color: #d1d5db;
+        }
+        .cricket-dark td {
+            font-size: 1.6rem;
+            padding: 0.3rem 0;
+            font-weight: bold;
+        }
+        .cricket-dark .cricket-mark {
+            font-size: 1.6rem; /* Larger cricket marks */
+        }
+        .cricket-dark .points-display {
+            font-size: 2.6rem;
+        }
+        .game-selector {
+            background-color: #222;
+            color: #fff;
+        }
+        .game-selector.active {
+            background-color: #e20707;
+        }
+        #dart-input-section {
+            background-color: #111;
+        }
+        #total-input {
+            background-color: #ffff;
+            color: #000;
+        }
+        #submit-scores {
+            background-color: #3091d1;
+        }
+        #undo-btn {
+            background-color: #555;
+        }
+        #reset-btn {
+            background-color: #ef4444;
+        }
+        .bg-blue-900 {
+            background-color: #1a365d;
+        }
+        .bg-green-900 {
+            background-color: #cf6e13;
+        }
+        .bg-purple-900 {
+            background-color: #4c1d95;
+        }
+        .history-toggle {
+            background-color: #222;
+        }
+        .history-content {
+            background-color: #111;
+        }
+        #game-history {
+            max-height: fit-content;
+        }
+        /* Smaller progress bars */
+        .progress-bar {
+            height: 0.3rem;
+        }
+        /* More compact cricket table */
+        /* .compact-cricket td, .compact-cricket th {
+            padding: 0.1rem 0.2rem;
+        }*/
+        /* Smartphones (portrait and landscape) ----------- */
+        @media only screen 
+        and (min-device-width : 320px) 
+        and (max-device-width : 480px) {
+        /* Styles */
+        }
+
+        /* Smartphones (landscape) ----------- */
+        @media only screen 
+        and (min-width : 321px) {
+        /* Styles */
+        }
+
+        /* Smartphones (portrait) ----------- */
+        @media only screen 
+        and (max-width : 320px) {
+        /* Styles */
+        }
+
+        /* iPads (portrait and landscape) ----------- */
+        @media only screen 
+        and (min-device-width : 768px) 
+        and (max-device-width : 1024px) {
+        /* Styles */
+        }
+
+        /* iPads (landscape) ----------- */
+        @media only screen 
+        and (min-device-width : 768px) 
+        and (max-device-width : 1024px) 
+        and (orientation : landscape) {
+        /* Styles */
+        }
+
+        /* iPads (portrait) ----------- */
+        @media only screen 
+        and (min-device-width : 768px) 
+        and (max-device-width : 1024px) 
+        and (orientation : portrait) {
+        /* Styles */
+        }
+
+        /* Desktops and laptops ----------- */
+        @media only screen 
+        and (min-width : 1224px) {
+        /* Styles */
+        }
+
+        /* Large screens ----------- */
+        @media only screen 
+        and (min-width : 1824px) {
+        /* Styles */
+        }
+
+        /* iPhone 4 ----------- */
+        @media
+        only screen and (-webkit-min-device-pixel-ratio : 1.5),
+        only screen and (min-device-pixel-ratio : 1.5) {
+        /* Styles */
+        }
+        /* iPhone 6 landscape */
+        @media only screen and (min-device-width: 375px)
+        and (max-device-width: 667px)
+        and (orientation: landscape)
+        and (-webkit-min-device-pixel-ratio: 2)
+        { }
+
+        /* iPhone 6 portrait */
+        @media only screen
+        and (min-device-width: 375px)
+        and (max-device-width: 667px)
+        and (orientation: portrait)
+        and (-webkit-min-device-pixel-ratio: 2)
+        { }
+
+        /* iPhone 6 Plus landscape */
+        @media only screen
+        and (min-device-width: 414px)
+        and (max-device-width: 736px)
+        and (orientation: landscape)
+        and (-webkit-min-device-pixel-ratio: 3)
+        { }
+
+        /* iPhone 6 Plus portrait */
+        @media only screen 
+        and (min-device-width: 414px) 
+        and (max-device-width: 736px) 
+        and (orientation: portrait) 
+        and (-webkit-min-device-pixel-ratio: 3)
+        { }
+
+        /* iPhone 6 and 6 Plus */
+        @media only screen
+        and (max-device-width: 640px),
+        only screen and (max-device-width: 667px),
+        only screen and (max-width: 480px)
+        { }
+
+        /* Apple Watch */
+        @media
+        (max-device-width: 42mm)
+        and (min-device-width: 38mm)
+        { }
+    </style>
+</head>
+<body class="h-full overflow-hidden">
+    <div class="container mx-auto px-2 py-2 h-full flex flex-col" style="max-height: 100vh;">
+        <header class="text-center mb-1">
+            <h1 class="text-xl font-bold text-blue-400 mb-0">Trifecta Challenge</h1>
+            <p class="text-xs text-gray-400">Combines 301, 501 & Cricket in one exciting game!</p>
+        </header>
+
+        <div class="bg-gray-900 rounded-xl shadow-lg overflow-hidden mb-1 flex-grow-0">
+            <!-- Game Controls -->
+            <div class="bg-blue-900 text-white p-2">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-sm font-bold">Round: <span id="round-count">1</span></h2>
+                        <p class="text-xs opacity-80">Current Player: <span id="current-player" class="font-semibold">Player 1</span></p>
+                    </div>
+                    <div class="flex space-x-1">
+                        <button id="undo-btn" class="hover:bg-gray-700 px-2 py-1 rounded-lg flex items-center text-xs">
+                            <i class="fas fa-undo mr-1"></i> Undo
+                        </button>
+                        <button id="reset-btn" class="hover:bg-red-700 px-2 py-1 rounded-lg flex items-center text-xs">
+                            <i class="fas fa-redo mr-1"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Game History -->
+            <div id="history-section" class="mt-1 bg-gray-900 rounded-xl shadow-lg overflow-hidden flex-grow-0 history-collapsed">
+                <div class="history-toggle p-2">
+                    <h2 class="text-sm font-bold flex justify-between items-center">
+                        <span>Game History</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </h2>
+                </div>
+                <div class="p-1 history-content">
+                    <div id="game-history" class="space-y-1 overflow-y-auto text-xs">
+                        <!-- Game history entries will be added here -->
+                    </div>
+                </div>
+
+            <!-- Game Selector -->
+            <div class="p-2 border-b border-gray-800">
+                <h3 class="font-semibold text-gray-300 mb-1 text-sm">Select game for this round:</h3>
+                <div class="flex space-x-1">
+                    <button data-game="301" class="game-selector px-1 py-1 rounded-lg flex-1 text-center font-medium text-sm">
+                        301
+                    </button>
+                    <button data-game="501" class="game-selector px-1 py-1 rounded-lg flex-1 text-center font-medium text-sm">
+                        501
+                    </button>
+                    <button data-game="cricket" class="game-selector px-1 py-1 rounded-lg flex-1 text-center font-medium text-sm">
+                        Cricket
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dart Input -->
+            <div class="p-2 border-b border-gray-800" id="dart-input-section">
+                <h3 class="font-semibold text-gray-300 mb-1 text-sm">Enter scores:</h3>
+                
+                <!-- 301/501 input -->
+                <div id="01-input-section" class="hidden mb-3">
+                    <input type="number" min="0" max="180" id="total-input" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-900 rounded-lg px-2 py-1 text-center" placeholder="Total score for 3 darts">
+                </div>
+                
+                <!-- Cricket input -->
+                <div id="cricket-input-section" class="hidden">
+                    <!-- Multiplier selector -->
+                    <div id="multiplier-section" class="mb-1">
+                        <h4 class="text-xs text-gray-400 mb-0">Select multiplier for each dart:</h4>
+                        <div class="grid grid-cols-3 gap-1 mb-1">
+                            <div class="flex space-x-0">
+                                <button data-multiplier="1" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs active">Single</button>
+                                <button data-multiplier="2" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs">Double</button>
+                                <button data-multiplier="3" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs">Triple</button>
+                            </div>
+                            <div class="flex space-x-0">
+                                <button data-multiplier="1" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs active">Single</button>
+                                <button data-multiplier="2" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs">Double</button>
+                                <button data-multiplier="3" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs">Triple</button>
+                            </div>
+                            <div class="flex space-x-0">
+                                <button data-multiplier="1" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs active">Single</button>
+                                <button data-multiplier="2" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs">Double</button>
+                                <button data-multiplier="3" class="multiplier-selector flex-1 border border-gray-700 rounded px-1 py-0 text-center text-xs">Triple</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dart inputs -->
+                    <div class="flex space-x-1 mb-1">
+                        <select class="cricket-dart-select flex-1 border border-gray-700 rounded-lg px-1 py-1 text-center text-sm">
+                            <option value="">Dart 1</option>
+                            <option value="20">20</option>
+                            <option value="19">19</option>
+                            <option value="18">18</option>
+                            <option value="17">17</option>
+                            <option value="16">16</option>
+                            <option value="15">15</option>
+                            <option value="25">Bull</option>
+                        </select>
+                        <select class="cricket-dart-select flex-1 border border-gray-700 rounded-lg px-1 py-1 text-center text-sm">
+                            <option value="">Dart 2</option>
+                            <option value="20">20</option>
+                            <option value="19">19</option>
+                            <option value="18">18</option>
+                            <option value="17">17</option>
+                            <option value="16">16</option>
+                            <option value="15">15</option>
+                            <option value="25">Bull</option>
+                        </select>
+                        <select class="cricket-dart-select flex-1 border border-gray-700 rounded-lg px-1 py-1 text-center text-sm">
+                            <option value="">Dart 3</option>
+                            <option value="20">20</option>
+                            <option value="19">19</option>
+                            <option value="18">18</option>
+                            <option value="17">17</option>
+                            <option value="16">16</option>
+                            <option value="15">15</option>
+                            <option value="25">Bull</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="submit-scores" class="w-full hover:bg-blue-700 text-white py-1 rounded-lg font-semibold text-sm">
+                    Submit Scores
+                </button>
+            </div>
+        </div>
+
+        <!-- Scoreboards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-1 flex-grow overflow-auto" style="height: fit-content;">
+            <!-- Player 1 -->
+            <div class="bg-gray-900 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                <div class="bg-green-900 text-white p-2">
+                    <h2 class="text-2xl font-bold flex justify-center" id="player1-header">
+                        <span class="editable-name" id="player1-name">Player 1</span>
+                    </h2>
+                </div>
+                
+                <div class="p-2 flex-grow overflow-auto">
+                    <!-- 301 Game -->
+                    <div class="mb-2">
+                        <h3 class="font-semibold text-gray-300 mb-0 text-2xl">301</h3>
+                        <div class="h-1 progress-bar bg-gray-800 rounded-full overflow-hidden">
+                            <div id="player1-301-progress" class="h-full bg-green-600" style="width: 100%"></div>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center">
+                            <div id="player1-301-marks" class="flex space-x-1">
+                                <!-- Marks will be added here -->
+                            </div>
+                            <div class="flex items-center">
+                                <span id="player1-301-last" class="last-score"></span>
+                                <span id="player1-301" class="score-large font-bold text-green-400">301</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 501 Game -->
+                    <div class="mb-2">
+                        <h3 class="font-semibold text-gray-300 mb-0 text-2xl">501</h3>
+                        <div class="h-1 progress-bar bg-gray-800 rounded-full overflow-hidden">
+                            <div id="player1-501-progress" class="h-full bg-purple-600" style="width: 100%"></div>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center">
+                            <div id="player1-501-marks" class="flex space-x-1">
+                                <!-- Marks will be added here -->
+                            </div>
+                            <div class="flex items-center">
+                                <span id="player1-501-last" class="last-score"></span>
+                                <span id="player1-501" class="score-large font-bold text-purple-400">501</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cricket Game -->
+                    <div class="cricket-dark p-1 rounded-lg">
+                        <h3 class="font-semibold text-white mb-1 text-md">Cricket</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full cricket-dark">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Number</th>
+                                        <th class="text-center">Marks</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="player1-cricket">
+                                    <!-- Cricket numbers will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center">
+                            <p class="points-display text-white">Points: <span id="player1-cricket-points" class="font-semibold">0</span></p>
+                            <span id="player1-cricket-last" class="last-score text-gray-300"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Player 2 -->
+            <div class="bg-gray-900 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                <div class="bg-blue-900 text-white p-2">
+                    <h2 class="text-2xl font-bold flex justify-center" id="player2-header">
+                        <span class="editable-name" id="player2-name">Player 2</span>
+                    </h2>
+                </div>
+                
+                <div class="p-2 flex-grow overflow-auto">
+                    <!-- 301 Game -->
+                    <div class="mb-2">
+                        <h3 class="font-semibold text-gray-300 mb-0 text-2xl">301</h3>
+                        <div class="h-1 progress-bar bg-gray-800 rounded-full overflow-hidden">
+                            <div id="player2-301-progress" class="h-full bg-green-600" style="width: 100%"></div>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center">
+                            <div id="player2-301-marks" class="flex space-x-1">
+                                <!-- Marks will be added here -->
+                            </div>
+                            <div class="flex items-center">
+                                <span id="player2-301-last" class="last-score"></span>
+                                <span id="player2-301" class="score-large font-bold text-green-400">301</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 501 Game -->
+                    <div class="mb-2">
+                        <h3 class="font-semibold text-gray-300 mb-0 text-2xl">501</h3>
+                        <div class="h-1 progress-bar bg-gray-800 rounded-full overflow-hidden">
+                            <div id="player2-501-progress" class="h-full bg-purple-600" style="width: 100%"></div>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center">
+                            <div id="player2-501-marks" class="flex space-x-1">
+                                <!-- Marks will be added here -->
+                            </div>
+                            <div class="flex items-center">
+                                <span id="player2-501-last" class="last-score"></span>
+                                <span id="player2-501" class="score-large font-bold text-purple-400">501</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cricket Game -->
+                    <div class="cricket-dark p-1 rounded-lg">
+                        <h3 class="font-semibold text-white mb-1 text-md">Cricket</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full h-full cricket-dark">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">Number</th>
+                                        <th class="text-center">Marks</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="player2-cricket">
+                                    <!-- Cricket numbers will be added here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-1 flex justify-between items-center">
+                            <p class="points-display text-white">Points: <span id="player2-cricket-points" class="font-semibold">0</span></p>
+                            <span id="player2-cricket-last" class="last-score text-gray-300"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        
+
+    <script>
+        let stateHistory = []; // Array to store previous game states for undo
+        const MAX_UNDO_STEPS = 10; // Optional: Limit how many steps can be undone
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game state
+            const state = {
+                currentPlayer: 1, // 1 or 2
+                currentGame: null, // '301', '501', or 'cricket'
+                round: 1,
+                dartMultipliers: [1, 1, 1], // Default to single for each dart
+                player1: {
+                    name: "Player 1",
+                    '301': {
+                        score: 301,
+                        marks: [], // Track marks for each turn
+                        lastScore: null
+                    },
+                    '501': {
+                        score: 501,
+                        marks: [], // Track marks for each turn
+                        lastScore: null
+                    },
+                    cricket: {
+                        numbers: [20, 19, 18, 17, 16, 15, 25],
+                        marks: [0, 0, 0, 0, 0, 0, 0],
+                        closed: [false, false, false, false, false, false, false],
+                        points: 0,
+                        lastScore: null
+                    }
+                },
+                player2: {
+                    name: "Player 2",
+                    '301': {
+                        score: 301,
+                        marks: [], // Track marks for each turn
+                        lastScore: null
+                    },
+                    '501': {
+                        score: 501,
+                        marks: [], // Track marks for each turn
+                        lastScore: null
+                    },
+                    cricket: {
+                        numbers: [20, 19, 18, 17, 16, 15, 25],
+                        marks: [0, 0, 0, 0, 0, 0, 0],
+                        closed: [false, false, false, false, false, false, false],
+                        points: 0,
+                        lastScore: null
+                    }
+                },
+                history: []
+            };
+
+            // DOM elements
+            const elements = {
+                roundCount: document.getElementById('round-count'),
+                currentPlayer: document.getElementById('current-player'),
+                gameSelectors: document.querySelectorAll('.game-selector'),
+                submitBtn: document.getElementById('submit-scores'),
+                undoBtn: document.getElementById('undo-btn'),
+                resetBtn: document.getElementById('reset-btn'),
+                multiplierSection: document.getElementById('multiplier-section'),
+                multiplierButtons: document.querySelectorAll('.multiplier-selector'),
+                cricketDartSelects: document.querySelectorAll('.cricket-dart-select'),
+                total01Input: document.getElementById('total-input'),
+                input01Section: document.getElementById('01-input-section'),
+                inputCricketSection: document.getElementById('cricket-input-section'),
+                
+                // Player 1 elements
+                player1Name: document.getElementById('player1-name'),
+                player1Header: document.getElementById('player1-header'),
+                player1301: document.getElementById('player1-301'),
+                player1301Last: document.getElementById('player1-301-last'),
+                player1301Marks: document.getElementById('player1-301-marks'),
+                player1301Progress: document.getElementById('player1-301-progress'),
+                player1501: document.getElementById('player1-501'),
+                player1501Last: document.getElementById('player1-501-last'),
+                player1501Marks: document.getElementById('player1-501-marks'),
+                player1501Progress: document.getElementById('player1-501-progress'),
+                player1Cricket: document.getElementById('player1-cricket'),
+                player1CricketPoints: document.getElementById('player1-cricket-points'),
+                player1CricketLast: document.getElementById('player1-cricket-last'),
+                
+                // Player 2 elements
+                player2Name: document.getElementById('player2-name'),
+                player2Header: document.getElementById('player2-header'),
+                player2301: document.getElementById('player2-301'),
+                player2301Last: document.getElementById('player2-301-last'),
+                player2301Marks: document.getElementById('player2-301-marks'),
+                player2301Progress: document.getElementById('player2-301-progress'),
+                player2501: document.getElementById('player2-501'),
+                player2501Last: document.getElementById('player2-501-last'),
+                player2501Marks: document.getElementById('player2-501-marks'),
+                player2501Progress: document.getElementById('player2-501-progress'),
+                player2Cricket: document.getElementById('player2-cricket'),
+                player2CricketPoints: document.getElementById('player2-cricket-points'),
+                player2CricketLast: document.getElementById('player2-cricket-last'),
+                
+                // History
+                gameHistory: document.getElementById('game-history'),
+                historyToggle: document.querySelector('.history-toggle'),
+                historyContent: document.querySelector('.history-content')
+            };
+
+            // Initialize the game
+            function initGame() {
+                updateUI();
+                renderCricketTable();
+                renderMarks();
+                addHistoryEntry('Game started! Player 1 begins.');
+                
+                // Set up multiplier button click handlers
+                elements.multiplierButtons.forEach((btn, index) => {
+                    btn.addEventListener('click', function() {
+                        const multiplier = parseInt(this.dataset.multiplier);
+                        state.dartMultipliers[Math.floor(index / 3)] = multiplier;
+                        
+                        // Update active state
+                        const buttonGroup = this.parentElement;
+                        buttonGroup.querySelectorAll('.multiplier-selector').forEach(b => {
+                            b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                    });
+                });
+
+                // Set up editable name handlers
+                elements.player1Name.addEventListener('click', function() {
+                    editPlayerName(1);
+                });
+                
+                elements.player2Name.addEventListener('click', function() {
+                    editPlayerName(2);
+                });
+
+                 // Set up history toggle
+                elements.historyToggle.addEventListener('click', function() {
+                    console.log("History toggle clicked!");
+                    const historyElement = document.querySelector('#history-section'); // Use the ID
+                    if (historyElement) {
+                    historyElement.classList.toggle('history-collapsed'); // Toggle the class
+                    console.log("Toggled 'history-collapsed' on:", historyElement);
+                    console.log("Current classes:", historyElement.classList);
+                    } else {
+                    console.error("History section element not found!");
+                    }
+                    this.classList.toggle('active'); // Toggle active on the button
+                    console.log("Toggled 'active' on button:", this);
+                });
+                
+                // Add input filter for the 301/501 total score input (#total-input)
+                if (elements.total01Input) { // Make sure the element was found
+                    elements.total01Input.addEventListener('input', function(event) {
+                        // Get the current value from the input field
+                        let value = event.target.value;
+
+                        // Use regex to remove any character that is NOT a digit (0-9)
+                        let sanitizedValue = value.replace(/[^0-9]/g, '');
+
+                        // If the sanitization actually changed the value,
+                        // update the input field to the sanitized value.
+                        // This prevents unnecessary updates and potential cursor jumps.
+                        if (value !== sanitizedValue) {
+                            event.target.value = sanitizedValue;
+                        }
+                    });
+                    // Optional: Log confirmation that the listener was attached
+                    console.log("Numeric input filter attached to #total-input.");
+                } else {
+                    // Log an error if the input element wasn't found (shouldn't happen normally)
+                    console.error("Element #total-input (elements.total01Input) not found for filtering.");
+                }
+               
+                //elements.historyToggle.addEventListener('click', function() {
+                //    document.querySelector('.history-collapsed').classList.toggle('history-collapsed');
+                //    this.classList.toggle('active');
+                //});
+
+                // Add event listener for the Undo button
+                if (elements.undoBtn) {
+                    elements.undoBtn.addEventListener('click', undoLastTurn);
+                } else {
+                    console.error("Undo button not found!");
+                }
+
+                // Add event listener for the Reset button
+                if(elements.resetBtn) {
+                    elements.resetBtn.addEventListener('click', () => {
+                        if (confirm("Are you sure you want to reset the entire game?")) {
+                            // Reset state logic: Re-initialize state, clear history etc.
+                            // Example: location.reload(); // Easiest way to fully reset
+                            // Or manually reset state object and stateHistory, then call initGame()
+                            stateHistory = []; // Clear undo history
+                            // Reset 'state' object to its initial values... (tedious)
+                            location.reload(); // Simpler for full reset
+                        }
+                    });
+                }
+
+                // ... rest of initGame code (like numeric filter setup) ...
+                console.log("Game Initialized.");
+            }
+
+            // Edit player name
+            function editPlayerName(playerNum) {
+                const player = playerNum === 1 ? state.player1 : state.player2;
+                const nameElement = playerNum === 1 ? elements.player1Name : elements.player2Name;
+                
+                const currentName = player.name;
+                const newName = prompt(`Enter new name for Player ${playerNum}:`, currentName);
+                
+                if (newName && newName.trim() !== '') {
+                    player.name = newName.trim();
+                    nameElement.textContent = player.name;
+                    addHistoryEntry(`Player ${playerNum} renamed to "${player.name}"`);
+                    updateUI();
+                }
+            }
+
+            // Update UI based on state
+            function updateUI() {
+                // ... (update round, current player, scores, progress bars, etc.) ...
+                elements.roundCount.textContent = state.round;
+                elements.currentPlayer.textContent = state[`player${state.currentPlayer}`].name;
+
+                // Update Player 1 scores/progress/last etc.
+                elements.player1301.textContent = state.player1['301'].score;
+                elements.player1501.textContent = state.player1['501'].score;
+                elements.player1CricketPoints.textContent = state.player1.cricket.points;
+                // Update last scores...
+                elements.player1301Last.textContent = state.player1['301'].lastScore !== null ? `(${state.player1['301'].lastScore})` : '';
+                elements.player1501Last.textContent = state.player1['501'].lastScore !== null ? `(${state.player1['501'].lastScore})` : '';
+                elements.player1CricketLast.textContent = state.player1.cricket.lastScore !== null ? `(${state.player1.cricket.lastScore})` : ''; // Assuming you add lastScore to cricket state
+                // Update progress bars...
+                elements.player1301Progress.style.width = `${Math.max(0, (state.player1['301'].score / 301) * 100)}%`;
+                elements.player1501Progress.style.width = `${Math.max(0, (state.player1['501'].score / 501) * 100)}%`;
+
+
+                // Update Player 2 scores/progress/last etc.
+                elements.player2301.textContent = state.player2['301'].score;
+                elements.player2501.textContent = state.player2['501'].score;
+                elements.player2CricketPoints.textContent = state.player2.cricket.points;
+                // Update last scores...
+                elements.player2301Last.textContent = state.player2['301'].lastScore !== null ? `(${state.player2['301'].lastScore})` : '';
+                elements.player2501Last.textContent = state.player2['501'].lastScore !== null ? `(${state.player2['501'].lastScore})` : '';
+                elements.player2CricketLast.textContent = state.player2.cricket.lastScore !== null ? `(${state.player2.cricket.lastScore})` : '';
+                // Update progress bars...
+                elements.player2301Progress.style.width = `${Math.max(0, (state.player2['301'].score / 301) * 100)}%`;
+                elements.player2501Progress.style.width = `${Math.max(0, (state.player2['501'].score / 501) * 100)}%`;
+
+
+                // Update player turn indicator highlight
+                elements.player1Header.classList.toggle('player-turn', state.currentPlayer === 1);
+                elements.player2Header.classList.toggle('player-turn', state.currentPlayer === 2);
+
+
+                // Enable/disable Undo button based on history length
+                if (elements.undoBtn) {
+                    elements.undoBtn.disabled = stateHistory.length === 0;
+                    elements.undoBtn.classList.toggle('opacity-50', stateHistory.length === 0);
+                    elements.undoBtn.classList.toggle('cursor-not-allowed', stateHistory.length === 0);
+                }
+
+                // Show/hide input sections based on selected game
+                elements.input01Section.classList.toggle('hidden', state.currentGame !== '301' && state.currentGame !== '501');
+                elements.inputCricketSection.classList.toggle('hidden', state.currentGame !== 'cricket');
+
+                // Update game selector active state (ensure only one is active)
+                elements.gameSelectors.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.game === state.currentGame);
+                });
+
+                
+                // Update round and current player
+                elements.roundCount.textContent = state.round;
+                elements.currentPlayer.textContent = state.currentPlayer === 1 ? state.player1.name : state.player2.name;
+                
+                // Update player names
+                elements.player1Name.textContent = state.player1.name;
+                elements.player2Name.textContent = state.player2.name;
+                
+                // Update turn indicator (red background for current player)
+                if (state.currentPlayer === 1) {
+                    elements.player1Header.classList.add('player-turn');
+                    elements.player2Header.classList.remove('player-turn');
+                } else {
+                    elements.player1Header.classList.remove('player-turn');
+                    elements.player2Header.classList.add('player-turn');
+                }
+                
+                // Update game selector active state
+                elements.gameSelectors.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.game === state.currentGame);
+                });
+                
+                // Show/hide input sections based on selected game
+                if (state.currentGame === 'cricket') {
+                    elements.input01Section.classList.add('hidden');
+                    elements.inputCricketSection.classList.remove('hidden');
+                } else if (state.currentGame === '301' || state.currentGame === '501') {
+                    elements.input01Section.classList.remove('hidden');
+                    elements.inputCricketSection.classList.add('hidden');
+                } else {
+                    elements.input01Section.classList.add('hidden');
+                    elements.inputCricketSection.classList.add('hidden');
+                }
+                /*
+                // Update player 1 scores
+                elements.player1301.textContent = state.player1['301'].score;
+                elements.player1501.textContent = state.player1['501'].score;
+                elements.player1CricketPoints.textContent = state.player1.cricket.points;
+                
+                // Update player 1 last scores
+                elements.player1301Last.textContent = state.player1['301'].lastScore ? `-${state.player1['301'].lastScore}` : '';
+                elements.player1501Last.textContent = state.player1['501'].lastScore ? `-${state.player1['501'].lastScore}` : '';
+                elements.player1CricketLast.textContent = state.player1.cricket.lastScore ? `+${state.player1.cricket.lastScore}` : '';
+                
+                // Update player 2 scores
+                elements.player2301.textContent = state.player2['301'].score;
+                elements.player2501.textContent = state.player2['501'].score;
+                elements.player2CricketPoints.textContent = state.player2.cricket.points;
+                
+                // Update player 2 last scores
+                elements.player2301Last.textContent = state.player2['301'].lastScore ? `-${state.player2['301'].lastScore}` : '';
+                elements.player2501Last.textContent = state.player2['501'].lastScore ? `-${state.player2['501'].lastScore}` : '';
+                elements.player2CricketLast.textContent = state.player2.cricket.lastScore ? `+${state.player2.cricket.lastScore}` : '';
+                */
+                // Update progress bars
+                //updateProgressBars();
+                
+                // Update cricket tables
+                updateCricketTables();
+                
+                // Update marks display
+                renderMarks();
+            }
+
+            // Render marks for 301/501 games
+            function renderMarks() {
+                // Player 1 - 301
+                elements.player1301Marks.innerHTML = '';
+                state.player1['301'].marks.forEach((mark, i) => {
+                    const markElement = document.createElement('span');
+                    markElement.className = 'cricket-mark text-lg';
+                    markElement.textContent = getMarkSymbol(mark);
+                    //elements.player1301Marks.appendChild(markElement);
+                });
+                
+                // Player 1 - 501
+                elements.player1501Marks.innerHTML = '';
+                state.player1['501'].marks.forEach((mark, i) => {
+                    const markElement = document.createElement('span');
+                    markElement.className = 'cricket-mark text-lg';
+                    markElement.textContent = getMarkSymbol(mark);
+                    //elements.player1501Marks.appendChild(mmarkElement);
+                });
+                
+                // Player 2 - 301
+                elements.player2301Marks.innerHTML = '';
+                state.player2['301'].marks.forEach((mark, i) => {
+                    const markElement = document.createElement('span');
+                    markElement.className = 'cricket-mark text-lg';
+                    markElement.textContent = getMarkSymbol(mark);
+                    //elements.player2301Marks.appendChild(markElement);
+                });
+                
+                // Player 2 - 501
+                elements.player2501Marks.innerHTML = '';
+                state.player2['501'].marks.forEach((mark, i) => {
+                    const markElement = document.createElement('span');
+                    markElement.className = 'cricket-mark text-lg';
+                    markElement.textContent = getMarkSymbol(mark);
+                    //elements.player2501Marks.appendChild(markElement);
+                });
+            }
+            
+            // Get mark symbol based on count
+            function getMarkSymbol(count) {
+                if (count === 1) return '/';
+                if (count === 2) return 'X';
+                if (count >= 3) return '𐤏'; // Using Phoenician symbol for 3 marks
+                return '';
+            }
+
+            // Update progress bars
+            function updateProgressBars() {
+                // Player 1
+                const player1301Progress = ((301 - state.player1['301'].score) / 301) * 100;
+                elements.player1301Progress.style.width = `${Math.min(100, player1301Progress)}%`;
+                
+                const player1501Progress = ((501 - state.player1['501'].score) / 501) * 100;
+                elements.player1501Progress.style.width = `${Math.min(100, player1501Progress)}%`;
+                
+                // Player 2
+                const player2301Progress = ((301 - state.player2['301'].score) / 301) * 100;
+                elements.player2301Progress.style.width = `${Math.min(100, player2301Progress)}%`;
+                
+                const player2501Progress = ((501 - state.player2['501'].score) / 501) * 100;
+                elements.player2501Progress.style.width = `${Math.min(100, player2501Progress)}%`;
+            }
+
+            // Render cricket tables
+            function renderCricketTable() {
+                // Player 1 cricket table
+                elements.player1Cricket.innerHTML = '';
+                state.player1.cricket.numbers.forEach((num, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="py-1">${num === 25 ? 'Bull' : num}</td>
+                        <td class="text-center py-1 cricket-mark">${getMarkSymbol(state.player1.cricket.marks[index])}</td>
+                        <td class="text-center py-1">${state.player1.cricket.closed[index] ? 'Closed' : 'Open'}</td>
+                    `;
+                    elements.player1Cricket.appendChild(row);
+                });
+                
+                // Player 2 cricket table
+                elements.player2Cricket.innerHTML = '';
+                state.player2.cricket.numbers.forEach((num, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="py-1">${num === 25 ? 'Bull' : num}</td>
+                        <td class="text-center py-1 cricket-mark">${getMarkSymbol(state.player2.cricket.marks[index])}</td>
+                        <td class="text-center py-1">${state.player2.cricket.closed[index] ? 'Closed' : 'Open'}</td>
+                    `;
+                    elements.player2Cricket.appendChild(row);
+                });
+            }
+
+            // Update cricket tables
+            function updateCricketTables() {
+                // Player 1
+                const player1Rows = elements.player1Cricket.querySelectorAll('tr');
+                player1Rows.forEach((row, index) => {
+                    // Update marks
+                    row.children[1].textContent = getMarkSymbol(state.player1.cricket.marks[index]);
+                    
+                    // Update status
+                    row.children[2].textContent = state.player1.cricket.closed[index] ? 'Closed' : 'Open';
+                    
+                    // Update row classes
+                    row.children[1].className = `text-center py-1 cricket-mark ${state.player1.cricket.marks[index] > 0 ? 'hit' : ''}`;
+                    row.children[2].className = `text-center py-1 ${state.player1.cricket.closed[index] ? 'closed' : ''}`;
+                });
+                
+                // Player 2
+                const player2Rows = elements.player2Cricket.querySelectorAll('tr');
+                player2Rows.forEach((row, index) => {
+                    // Update marks
+                    row.children[1].textContent = getMarkSymbol(state.player2.cricket.marks[index]);
+                    
+                    // Update status
+                    row.children[2].textContent = state.player2.cricket.closed[index] ? 'Closed' : 'Open';
+                    
+                    // Update row classes
+                    row.children[1].className = `text-center py-1 cricket-mark ${state.player2.cricket.marks[index] > 0 ? 'hit' : ''}`;
+                    row.children[2].className = `text-center py-1 ${state.player2.cricket.closed[index] ? 'closed' : ''}`;
+                });
+            }
+
+            // Add history entry
+            function addHistoryEntry(text) {
+                const entry = document.createElement('div');
+                entry.className = 'text-xs bg-gray-800 p-1 rounded';
+                entry.innerHTML = `
+                    <span class="text-gray-400">${new Date().toLocaleTimeString()}</span>
+                    <span class="ml-1">${text}</span>
+                `;
+                elements.gameHistory.prepend(entry);
+                state.history.unshift(text);
+            }
+
+            // Handle game selection
+            elements.gameSelectors.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    state.currentGame = this.dataset.game;
+                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} selected ${state.currentGame} for this round.`);
+                    
+                    // Reset inputs when changing game
+                    if (state.currentGame === 'cricket') {
+                        elements.cricketDartSelects.forEach(select => select.value = '');
+                    } else {
+                        elements.total01Input.value = '0';
+                    }
+                    
+                    updateUI();
+                });
+            });
+
+            // Handle score submission
+            elements.submitBtn.addEventListener('click', function() {
+                if (!state.currentGame) {
+                    alert('Please select a game for this round first!');
+                    return;
+                }
+                // Add more validation as needed for the specific game input...
+                // If validation fails, DO NOT save state or proceed.
+
+                // --- 2. Save Current State BEFORE Making Changes ---
+                // Create a deep copy to avoid reference issues. JSON method is common.
+                const currentStateSnapshot = JSON.parse(JSON.stringify(state));
+                stateHistory.push(currentStateSnapshot);
+
+                // Optional: Limit the size of the history array
+                if (stateHistory.length > MAX_UNDO_STEPS) {
+                    stateHistory.shift(); // Remove the oldest state
+                }
+
+                // --- 3. Process the Score Input and Update State ---
+                let scoreDetails = {}; // Object to hold details for the history log
+                const playerKey = `player${state.currentPlayer}`;
+
+                if (state.currentGame === '301' || state.currentGame === '501') {
+                    const score = parseInt(elements.total01Input.value);
+                    if (isNaN(score) || score < 0 || score > 180) {
+                        alert("Invalid score for 01 game (must be 0-180).");
+                        stateHistory.pop(); // Remove the snapshot we just added, as the turn failed
+                        return; // Stop processing
+                    }
+                    // Apply score, check for bust/win (implement this logic)
+                    // Example (Needs proper bust/win logic):
+                    state[playerKey][state.currentGame].lastScore = score;
+                    state[playerKey][state.currentGame].score -= score;
+                    state[playerKey][state.currentGame].marks.push(score); // Add score to marks history
+
+                    scoreDetails = { game: state.currentGame, score: score, newTotal: state[playerKey][state.currentGame].score };
+
+                    elements.total01Input.value = ''; // Clear input
+                } else if (state.currentGame === 'cricket') {
+                    // Process cricket scores based on selects and multipliers
+                    // Update state[playerKey].cricket.marks, .points, .closed
+                    // Example (Needs full implementation):
+                    let turnMarks = []; // Store marks for this turn for history
+                    elements.cricketDartSelects.forEach((select, index) => {
+                        const numberHit = parseInt(select.value);
+                        const multiplier = state.dartMultipliers[index];
+                        if (numberHit) {
+                            // Process cricket game
+                            const dartScores = Array.from(elements.cricketDartSelects).map(select => {
+                            const value = parseInt(select.value) || 0;
+                            select.value = '';
+                            return value;
+                            });
+                    
+                        processCricketGame(dartScores);
+                        }
+                        select.value = ''; // Reset select
+                    });
+                    // Reset multipliers visually (you might need a function for this)
+                    resetMultipliersUI();
+                    state.dartMultipliers = [1, 1, 1]; // Reset multipliers in state
+
+                    scoreDetails = { game: 'cricket', marks: turnMarks, newPoints: state[playerKey].cricket.points };
+
+                }
+
+                // --- 4. Add Entry to Visual History Log ---
+                addHistoryEntry(`Round ${state.round}, ${state[playerKey].name} (${scoreDetails.game}): Scored ${scoreDetails.score ?? 'marks'}`, scoreDetails);
+
+
+                // --- 5. Switch Player / Increment Round ---
+                switchPlayer(); // Assume you have a function like this
+                // Increment round if needed (e.g., after player 2 finishes)
+
+
+                // --- 6. Update the UI ---
+                updateUI(); // Update scores, player indicator, round, etc.
+                //renderMarks(); // Re-render marks if needed
+                renderCricketTable(); // Re-render cricket table if needed
+
+
+                // --- 7. Check for Game Over ---
+                // checkForWin(); // Assume you have win condition checks
+                /*
+                if (state.currentGame === '301' || state.currentGame === '501') {
+                    // Process 01 game
+                    const totalScore = parseInt(elements.total01Input.value) || 0;
+                    if (totalScore > 180) {
+                        alert('Maximum score for 3 darts is 180!');
+                        return;
+                    }
+                    
+                    process01Game(totalScore);
+                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} scored ${totalScore} in ${state.currentGame}`);
+                } else if (state.currentGame === 'cricket') {
+                    // Process cricket game
+                    const dartScores = Array.from(elements.cricketDartSelects).map(select => {
+                        const value = parseInt(select.value) || 0;
+                        select.value = '';
+                        return value;
+                    });
+                    
+                    processCricketGame(dartScores);
+                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} scored in Cricket (${formatDartScores(dartScores)})`);
+                }
+                */
+                // Clear inputs
+                if (state.currentGame === '301' || state.currentGame === '501') {
+                    elements.total01Input.value = '';
+                } else {
+                    elements.cricketDartSelects.forEach(select => select.value = '');
+                }
+                /*
+                // Switch players and increment round if both players have played
+                if (state.currentPlayer === 2) {
+                    state.round++;
+                }
+                state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
+                state.currentGame = null;
+                */
+                // Reset multipliers
+                state.dartMultipliers = [1, 1, 1];
+                elements.multiplierButtons.forEach(b => b.classList.remove('active'));
+                elements.multiplierButtons[0].classList.add('active');
+                elements.multiplierButtons[3].classList.add('active');
+                elements.multiplierButtons[6].classList.add('active');
+                
+                // Update UI
+                updateUI();
+            });
+
+            function undoLastTurn() {
+                if (stateHistory.length === 0) {
+                    console.log("No turns to undo.");
+                    alert("Nothing to undo!");
+                    return; // Nothing in history
+                }
+
+                // Retrieve the most recent saved state
+                const previousState = stateHistory.pop();
+
+                // Restore the main state object properties from the snapshot
+                // Use Object.assign or loop through keys for deep restoration
+                // Using JSON parse/stringify ensures a deep copy restoration
+                const restoredState = JSON.parse(JSON.stringify(previousState));
+
+                // Overwrite current state properties with restored ones
+                // Be careful with 'const state', modify properties instead of reassigning 'state'
+                Object.keys(restoredState).forEach(key => {
+                    // Avoid overwriting the history log array reference directly if you handle it separately
+                    if (key !== 'history') { // Keep the current history array reference
+                        state[key] = restoredState[key];
+                    }
+                });
+                // Restore the visual history log separately if needed, or rely on state restoration
+                state.history = restoredState.history; // Restore the history log state
+
+
+                console.log("State restored to:", state);
+                addHistoryEntry("Undo performed."); // Add a log entry for the undo action
+
+                // Update the entire UI to reflect the restored state
+                updateUI();
+                renderCricketTable(); // Important for cricket
+                renderMarks(); // Important for 01 games
+                renderHistoryLog(); // Re-render the history log from the restored state.history
+
+                // Ensure input fields are reset/cleared appropriately if needed
+                elements.total01Input.value = '';
+                elements.cricketDartSelects.forEach(select => select.value = '');
+                resetMultipliersUI(); // Ensure cricket multipliers UI is reset
+            }
+
+            function resetMultipliersUI() {
+                // Find all multiplier button groups
+                const groups = document.querySelectorAll('#multiplier-section .grid > div');
+                groups.forEach(group => {
+                    const buttons = group.querySelectorAll('.multiplier-selector');
+                    buttons.forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.dataset.multiplier === '1') {
+                            btn.classList.add('active'); // Set Single as active default
+                        }
+                    });
+                });
+                state.dartMultipliers = [1, 1, 1]; // Also reset in state
+            }
+
+            function addHistoryEntry(message, details = null) {
+                // Add to the state's history log first
+                state.history.push({ message, details, timestamp: new Date().toLocaleTimeString() });
+
+                // Then render it visually
+                renderHistoryLog();
+            }
+
+            function renderHistoryLog() {
+                // Clear current visual history
+                elements.gameHistory.innerHTML = '';
+
+                // Render entries from state.history
+                state.history.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'p-1 border-b border-gray-700';
+                    entryDiv.textContent = `[${entry.timestamp}] ${entry.message}`;
+                    // Prepend to show newest first, or append for oldest first
+                    elements.gameHistory.prepend(entryDiv); // Show newest first
+                });
+
+                // Keep the scroll at the top after rendering
+                elements.gameHistory.scrollTop = 0;
+            }
+
+            function switchPlayer() {
+                state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
+                // Increment round after Player 2's turn
+                if (state.currentPlayer === 1) {
+                    state.round++;
+                }
+                // Reset multipliers for the next player's cricket turn
+                resetMultipliersUI();
+                state.currentGame = null;
+            }
+            // Format dart scores for history display
+            function formatDartScores(scores) {
+                return scores.map((score, i) => {
+                    if (score === 0) return 'Miss';
+                    const mult = state.dartMultipliers[i];
+                    return `${score === 25 ? 'Bull' : score} (${mult === 1 ? 'S' : mult === 2 ? 'D' : 'T'})`;
+                }).join(', ');
+            }
+
+            // Process 301/501 game
+            function process01Game(totalScore) {
+                const player = state.currentPlayer === 1 ? state.player1 : state.player2;
+                const gameType = state.currentGame;
+                
+                // Store last score
+                player[gameType].lastScore = totalScore;
+                
+                // Check if bust (goes below 0)
+                if (player[gameType].score - totalScore < 0) {
+                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} busted in ${gameType}! Score remains unchanged.`);
+                    return;
+                }
+                
+                // Check if win condition (exactly 0)
+                if (player[gameType].score - totalScore === 0) {
+                    player[gameType].score = 0;
+                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} won ${gameType}!`);
+                } else {
+                    // Normal score update
+                    player[gameType].score -= totalScore;
+                }
+                
+                // Calculate marks (1 mark per 100 points)
+                const marks = Math.min(3, Math.floor(totalScore / 100) + 1);
+                player[gameType].marks.push(marks);
+                
+                // Add animation to score
+                const scoreElement = state.currentPlayer === 1 
+                    ? (gameType === '301' ? elements.player1301 : elements.player1501)
+                    : (gameType === '301' ? elements.player2301 : elements.player2501);
+                
+                scoreElement.classList.add('animate-score');
+                setTimeout(() => {
+                    scoreElement.classList.remove('animate-score');
+                }, 500);
+            }
+
+            // Process cricket game
+            function processCricketGame(dartScores) {
+                const player = state.currentPlayer === 1 ? state.player1 : state.player2;
+                const opponent = state.currentPlayer === 1 ? state.player2 : state.player1;
+                
+                let pointsScored = 0;
+                
+                // Process each dart
+                dartScores.forEach((score, dartIndex) => {
+                    const multiplier = state.dartMultipliers[dartIndex];
+                    
+                    // Check if score is a valid cricket number (15-20 or 25)
+                    const cricketNumbers = [20, 19, 18, 17, 16, 15, 25];
+                    const index = cricketNumbers.indexOf(score);
+                    
+                    if (index !== -1) {
+                        // Calculate marks to add (1 for single, 2 for double, 3 for triple)
+                        const marksToAdd = multiplier;
+                        
+                        // Check if number is already closed by the player
+                        if (player.cricket.closed[index]) {
+                            // Number is closed, check if opponent hasn't closed it
+                            if (!opponent.cricket.closed[index]) {
+                                // Add points (number * multiplier)
+                                const points = (score * multiplier);
+                                player.cricket.points += points;
+                                pointsScored += points;
+                            }
+                        } else {
+                            // Number is not closed yet, add marks
+                            player.cricket.marks[index] += marksToAdd;
+                            
+                            // Cap at 3 marks (but allow points to keep accumulating)
+                            if (player.cricket.marks[index] >= 3) {
+                                player.cricket.marks[index] = 3;
+                                player.cricket.closed[index] = true;
+                            }
+                        }
+                    }
+                });
+                
+                // Store last score
+                player.cricket.lastScore = pointsScored > 0 ? pointsScored : null;
+                
+                // Add animation to cricket points
+                const pointsElement = state.currentPlayer === 1 
+                    ? elements.player1CricketPoints 
+                    : elements.player2CricketPoints;
+                
+                pointsElement.classList.add('animate-score');
+                setTimeout(() => {
+                    pointsElement.classList.remove('animate-score');
+                }, 500);
+            }
+
+            // Undo last action
+            elements.undoBtn.addEventListener('click', function() {
+                if (state.history.length > 0) {
+                    const lastAction = state.history.shift();
+                    addHistoryEntry(`Undo: ${lastAction}`);
+                    // Note: In a real app, you would implement proper undo functionality
+                    undoLastTurn;
+                } else {
+                    addHistoryEntry('Nothing to undo.');
+                }
+            });
+
+            // Reset game
+            elements.resetBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset the game? All scores will be lost.')) {
+                    // Reset state
+                    state.currentPlayer = 1;
+                    state.currentGame = null;
+                    state.round = 1;
+                    state.dartMultipliers = [1, 1, 1];
+                    
+                    state.player1 = {
+                        name: "Player 1",
+                        '301': {
+                            score: 301,
+                            marks: [],
+                            lastScore: null
+                        },
+                        '501': {
+                            score: 501,
+                            marks: [],
+                            lastScore: null
+                        },
+                        cricket: {
+                            numbers: [20, 19, 18, 17, 16, 15, 25],
+                            marks: [0, 0, 0, 0, 0, 0, 0],
+                            closed: [false, false, false, false, false, false, false],
+                            points: 0,
+                            lastScore: null
+                        }
+                    };
+                    
+                    state.player2 = {
+                        name: "Player 2",
+                        '301': {
+                            score: 301,
+                            marks: [],
+                            lastScore: null
+                        },
+                        '501': {
+                            score: 501,
+                            marks: [],
+                            lastScore: null
+                        },
+                        cricket: {
+                            numbers: [20, 19, 18, 17, 16, 15, 25],
+                            marks: [0, 0, 0, 0, 0, 0, 0],
+                            closed: [false, false, false, false, false, false, false],
+                            points: 0,
+                            lastScore: null
+                        }
+                    };
+                    
+                    state.history = [];
+                    
+                    // Clear inputs
+                    elements.total01Input.value = '';
+                    elements.cricketDartSelects.forEach(select => select.value = '');
+                    
+                    // Reset multipliers UI
+                    elements.multiplierButtons.forEach(b => b.classList.remove('active'));
+                    elements.multiplierButtons[0].classList.add('active');
+                    elements.multiplierButtons[3].classList.add('active');
+                    elements.multiplierButtons[6].classList.add('active');
+                    
+                    // Update UI
+                    updateUI();
+                    renderCricketTable();
+                    elements.gameHistory.innerHTML = '';
+                    addHistoryEntry('Game reset. Player 1 starts again.');
+                }
+            });
+
+            // Initialize the game
+            initGame();
+        });
+    </script>
+</body>
+<meta name=”apple-mobile-web-app-capable” content=”yes “>
+</html>
