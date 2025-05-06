@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name=”apple-mobile-web-app-capable” content=”yes “>
     <title>Trifecta Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -105,7 +106,7 @@
         }
         .cricket-dark table {
             width: 100%;
-            max-height: fit-content;
+            /*max-height: fit-content;*/
         }
         .cricket-dark th {
             font-size: 2rem;
@@ -275,6 +276,24 @@
         (max-device-width: 42mm)
         and (min-device-width: 38mm)
         { }
+        
+        @media only screen and (max-width: 768px) {
+        .flex {
+        flex-direction: column; /* Stack items vertically */
+        }
+        .grid {
+        grid-template-columns: 1fr; /* Single column layout */
+        }
+        h1 {
+        font-size: 1.5rem; /* Smaller font size */
+        }
+        #dart-input-section {
+        padding: 1rem; /* Add padding for better spacing */
+        }
+        .game-selector {
+        font-size: 0.9rem; /* Adjust button font size */
+        }
+}
     </style>
 </head>
 <body class="h-full overflow-hidden">
@@ -407,7 +426,7 @@
         </div>
 
         <!-- Scoreboards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-1 flex-grow overflow-auto" style="height: fit-content;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-1 flex-grow overflow-auto flex-wrap: wrap" style="height: 78vh;">
             <!-- Player 1 -->
             <div class="bg-gray-900 rounded-xl shadow-lg overflow-hidden flex flex-col">
                 <div class="bg-green-900 text-white p-2">
@@ -1471,5 +1490,4 @@
         });
     </script>
 </body>
-<meta name=”apple-mobile-web-app-capable” content=”yes “>
 </html>
