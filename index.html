@@ -814,9 +814,31 @@
                 elements.currentPlayer.textContent = state[`player${state.currentPlayer}`].name;
 
                 // Update Player 1 scores/progress/last etc.
-                elements.player1301.textContent = state.player1['301'].score;
-                elements.player1501.textContent = state.player1['501'].score;
+                
+                // Check if Player 1 has won the game (301)
+                if (state.player1['301'].score === 0) {
+                    elements.player1301.textContent = 'Winner';
+                    // Optional: Add a class for styling the winner text
+                    elements.player1301.classList.add('text-yellow-400', 'font-bold'); // Example styling classes
+                } else {
+                    elements.player1301.textContent = state.player1['301'].score;
+                    // Optional: Ensure winner styling is removed if the score is not 0 (e.g., after undo)
+                    elements.player1301.classList.remove('text-yellow-400', 'font-bold');
+                }
+                
+                // Check if Player 1 has won the game (501)
+                if (state.player1['501'].score === 0) {
+                    elements.player1501.textContent = 'Winner';
+                    // Optional: Add a class for styling the winner text
+                    elements.player1501.classList.add('text-yellow-400', 'font-bold'); // Example styling classes
+                } else {
+                    elements.player1501.textContent = state.player1['501'].score;
+                    // Optional: Ensure winner styling is removed if the score is not 0 (e.g., after undo)
+                    elements.player1501.classList.remove('text-yellow-400', 'font-bold');
+                }
                 elements.player1CricketPoints.textContent = state.player1.cricket.points;
+                // Check if Player 1 has won the game (Cricket)
+
                 // Update last scores...
                 elements.player1301Last.textContent = state.player1['301'].lastScore !== null ? `(${state.player1['301'].lastScore})` : '';
                 elements.player1501Last.textContent = state.player1['501'].lastScore !== null ? `(${state.player1['501'].lastScore})` : '';
@@ -827,9 +849,30 @@
 
 
                 // Update Player 2 scores/progress/last etc.
-                elements.player2301.textContent = state.player2['301'].score;
-                elements.player2501.textContent = state.player2['501'].score;
+                
+                // Check if Player 2 has won the game (301)
+                if (state.player2['301'].score === 0) {
+                    elements.player2301.textContent = 'Winner';
+                    // Optional: Add a class for styling the winner text
+                    elements.player2301.classList.add('text-yellow-400', 'font-bold'); // Example styling classes
+                } else {
+                    elements.player2301.textContent = state.player2['301'].score;
+                    // Optional: Ensure winner styling is removed if the score is not 0 (e.g., after undo)
+                    elements.player2301.classList.remove('text-yellow-400', 'font-bold');
+                }
+               
+                // Check if Player 2 has won the game (501)
+                if (state.player2['501'].score === 0) {
+                    elements.player2501.textContent = 'Winner';
+                    // Optional: Add a class for styling the winner text
+                    elements.player2501.classList.add('text-yellow-400', 'font-bold'); // Example styling classes
+                } else {
+                    elements.player2501.textContent = state.player2['501'].score;
+                    // Optional: Ensure winner styling is removed if the score is not 0 (e.g., after undo)
+                    elements.player2501.classList.remove('text-yellow-400', 'font-bold');
+                }
                 elements.player2CricketPoints.textContent = state.player2.cricket.points;
+                
                 // Update last scores...
                 elements.player2301Last.textContent = state.player2['301'].lastScore !== null ? `(${state.player2['301'].lastScore})` : '';
                 elements.player2501Last.textContent = state.player2['501'].lastScore !== null ? `(${state.player2['501'].lastScore})` : '';
@@ -1098,27 +1141,51 @@
                 // --- 3. Process the Score Input and Update State ---
                 let scoreDetails = {}; // Object to hold details for the history log
                 const playerKey = `player${state.currentPlayer}`;
+                const gameType = state.currentGame; // e.g., '301' or '501'
 
-                if (state.currentGame === '301' || state.currentGame === '501') {
-                    const score = parseInt(elements.total01Input.value);
-                    if (isNaN(score) || score < 0 || score > 180) {
+                if (gameType === '301' || gameType === '501') {
+                    const enteredScoreValue = parseInt(elements.total01Input.value);
+
+                    if (isNaN(enteredScoreValue) || enteredScoreValue < 0 || enteredScoreValue > 180) {
                         alert("Invalid score for 01 game (must be 0-180).");
-                        stateHistory.pop(); // Remove the snapshot we just added, as the turn failed
+                        stateHistory.pop(); // Remove the snapshot for the failed turn
                         return; // Stop processing
                     }
-                    // Apply score, check for bust/win (implement this logic)
-                    // Example (Needs proper bust/win logic):
-                    state[playerKey][state.currentGame].lastScore = score;
-                    state[playerKey][state.currentGame].score -= score;
-                    state[playerKey][state.currentGame].marks.push(score); // Add score to marks history
 
-                    scoreDetails = { game: state.currentGame, score: score, newTotal: state[playerKey][state.currentGame].score };
+                    const currentTotalScore = state[playerKey][gameType].score;
+                    const newPotentialScore = currentTotalScore - enteredScoreValue;
 
-                    elements.total01Input.value = ''; // Clear input
+                    if (newPotentialScore < 0) {
+                        // BUST condition
+                        alert("Bust! Score would go below zero. Score resets to previous value for this turn.");
+                        // Do NOT update state[playerKey][gameType].score
+                        // Do NOT update state[playerKey][gameType].lastScore with the busting score
+                        // The score remains what it was before this input.
+                        // We still want to log that an attempt was made, perhaps.
+                        addHistoryEntry(`Round ${state.round}, ${state[playerKey].name} (${gameType}): Busted with an attempt of ${enteredScoreValue}. Score remains ${currentTotalScore}.`);
+                        // It's important not to proceed with score deduction or updating lastScore here for a bust.
+                    } else if (newPotentialScore === 0) {
+                        // WIN condition (exact out)
+                        state[playerKey][gameType].lastScore = enteredScoreValue;
+                        state[playerKey][gameType].score = 0;
+                        state[playerKey][gameType].marks.push(enteredScoreValue);
+                        scoreDetails = { game: gameType, score: enteredScoreValue, newTotal: 0 };
+                        addHistoryEntry(`Round ${state.round}, ${state[playerKey].name} (${scoreDetails.game}): Scored ${scoreDetails.score}, New Total: ${state[playerKey][gameType].score}. PLAYER WINS ${gameType.toUpperCase()}!`);
+                        alert(`${state[playerKey].name} wins ${gameType.toUpperCase()}!`);
+                    } else {
+                        // Valid score, not a bust, not an exact win yet
+                        state[playerKey][gameType].lastScore = enteredScoreValue;
+                        state[playerKey][gameType].score = newPotentialScore;
+                        state[playerKey][gameType].marks.push(enteredScoreValue);
+                        scoreDetails = { game: gameType, score: enteredScoreValue, newTotal: newPotentialScore };
+                        addHistoryEntry(`Round ${state.round}, ${state[playerKey].name} (${scoreDetails.game}): Scored ${scoreDetails.score}, New Total: ${state[playerKey][gameType].score}`);
+                    }
+                    
+                    elements.total01Input.value = '0'; // Reset input field
+
                 } else if (state.currentGame === 'cricket') {
                     // Process cricket scores based on selects and multipliers
-                    // Update state[playerKey].cricket.marks, .points, .closed
-                    // Example (Needs full implementation):
+                    // Update state[playerKey].cricket.marks, .points, .closed, etc.
                     let turnMarks = []; // Store marks for this turn for history
                     elements.cricketDartSelects.forEach((select, index) => {
                         const numberHit = parseInt(select.value);
@@ -1159,30 +1226,13 @@
 
 
                 // --- 7. Check for Game Over ---
-                // checkForWin(); // Assume you have win condition checks
-                /*
-                if (state.currentGame === '301' || state.currentGame === '501') {
-                    // Process 01 game
-                    const totalScore = parseInt(elements.total01Input.value) || 0;
-                    if (totalScore > 180) {
-                        alert('Maximum score for 3 darts is 180!');
-                        return;
-                    }
-                    
-                    process01Game(totalScore);
-                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} scored ${totalScore} in ${state.currentGame}`);
-                } else if (state.currentGame === 'cricket') {
-                    // Process cricket game
-                    const dartScores = Array.from(elements.cricketDartSelects).map(select => {
-                        const value = parseInt(select.value) || 0;
-                        select.value = '';
-                        return value;
-                    });
-                    
-                    processCricketGame(dartScores);
-                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} scored in Cricket (${formatDartScores(dartScores)})`);
-                }
+                /* checkForWin(); // Assume you have win condition checks
+                 if (state[playerKey][state.currentGame].score <= 0) {  // Check if player has won
+                    alert(`${state[playerKey].name} wins the game!`);
+                    // Reset game or handle win condition
+                    resetGame(); // Implement this function to reset the game state
                 */
+
                 // Clear inputs
                 if (state.currentGame === '301' || state.currentGame === '501') {
                     elements.total01Input.value = '';
@@ -1309,43 +1359,7 @@
                 }).join(', ');
             }
 
-            // Process 301/501 game
-            function process01Game(totalScore) {
-                const player = state.currentPlayer === 1 ? state.player1 : state.player2;
-                const gameType = state.currentGame;
-                
-                // Store last score
-                player[gameType].lastScore = totalScore;
-                
-                // Check if bust (goes below 0)
-                if (player[gameType].score - totalScore < 0) {
-                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} busted in ${gameType}! Score remains unchanged.`);
-                    return;
-                }
-                
-                // Check if win condition (exactly 0)
-                if (player[gameType].score - totalScore === 0) {
-                    player[gameType].score = 0;
-                    addHistoryEntry(`${state.currentPlayer === 1 ? state.player1.name : state.player2.name} won ${gameType}!`);
-                } else {
-                    // Normal score update
-                    player[gameType].score -= totalScore;
-                }
-                
-                // Calculate marks (1 mark per 100 points)
-                const marks = Math.min(3, Math.floor(totalScore / 100) + 1);
-                player[gameType].marks.push(marks);
-                
-                // Add animation to score
-                const scoreElement = state.currentPlayer === 1 
-                    ? (gameType === '301' ? elements.player1301 : elements.player1501)
-                    : (gameType === '301' ? elements.player2301 : elements.player2501);
-                
-                scoreElement.classList.add('animate-score');
-                setTimeout(() => {
-                    scoreElement.classList.remove('animate-score');
-                }, 500);
-            }
+            
 
             // Process cricket game
             function processCricketGame(dartScores) {
